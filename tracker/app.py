@@ -288,7 +288,9 @@ DEFAULT_DATA = {
 def load_data():
     if DATA_FILE.exists():
         with open(DATA_FILE) as f:
-            return json.load(f)
+            data = json.load(f)
+        if data and "profile" in data:
+            return data
     return DEFAULT_DATA
 
 def save_data(data):
@@ -400,6 +402,41 @@ with st.sidebar:
     st.progress(min(hours_pct / 100, 1.0))
     st.divider()
 
+    # ── Session Timer ─────────────────────────────────
+    st.divider()
+    st.markdown("**⏱️ Session Timer**")
+
+    if "timer_running" not in st.session_state:
+        st.session_state.timer_running = False
+    if "timer_start" not in st.session_state:
+        st.session_state.timer_start = None
+
+    if not st.session_state.timer_running:
+        if st.button("▶️ Start Session", use_container_width=True):
+            st.session_state.timer_running = True
+            st.session_state.timer_start = datetime.now().isoformat()
+            st.rerun()
+        if st.session_state.get("timer_elapsed_hours"):
+            st.info(f"Last session: **{st.session_state.timer_elapsed_hours:.2f}h** — go to Daily Log to save it")
+    else:
+        start_dt = datetime.fromisoformat(st.session_state.timer_start)
+        elapsed = datetime.now() - start_dt
+        mins = int(elapsed.total_seconds() // 60)
+        secs = int(elapsed.total_seconds() % 60)
+        st.markdown(f"🟢 **{mins:02d}:{secs:02d} elapsed**")
+        st.caption(f"Started at {start_dt.strftime('%H:%M:%S')}")
+        if st.button("⏹️ Stop & Log", use_container_width=True, type="primary"):
+            hours = elapsed.total_seconds() / 3600
+            st.session_state.timer_running = False
+            st.session_state.timer_elapsed_hours = round(hours * 4) / 4  # round to nearest 0.25h
+            st.session_state.timer_start = None
+            st.rerun()
+        if st.button("✕ Cancel Timer", use_container_width=True):
+            st.session_state.timer_running = False
+            st.session_state.timer_start = None
+            st.rerun()
+
+    st.divider()
     page = st.selectbox("Navigate", [
         "🏠 Dashboard",
         "📅 Week Tracker",
@@ -623,46 +660,146 @@ elif page == "🏗️ Projects":
     st.title("🏗️ Enterprise Projects Portfolio")
     st.markdown('<div class="consultant-tip">Every project must have a Business Impact section. "I built X" → "I built X which reduced Y by Z% saving the business $N/month"</div>', unsafe_allow_html=True)
 
+    # Build full project list with lab/Q stats
     all_projects = []
     for pk, pv in data["phases"].items():
         for wk_key, wv in pv["weeks_data"].items():
             proj = wv.get("project", {})
             if proj.get("name"):
+                labs_total = len(wv.get("labs", {}))
+                labs_done = sum(1 for v in wv.get("labs", {}).values() if v)
+                qs_total = len(wv.get("interview_prep", {}))
+                qs_done = sum(1 for v in wv.get("interview_prep", {}).values() if v)
                 all_projects.append({
                     "phase": pv["name"],
+                    "phase_key": pk,
+                    "phase_color": pv.get("color", "#888"),
                     "week": wk_key.replace("_", " ").title(),
+                    "week_key": wk_key,
+                    "week_num": int(wk_key.split("_")[1]),
                     "topic": wv["topic"],
                     "name": proj["name"],
                     "completed": proj.get("completed", False),
                     "github_url": proj.get("github_url", ""),
                     "business_impact": proj.get("business_impact", ""),
-                    "phase_key": pk,
-                    "week_key": wk_key
+                    "hours_logged": wv.get("hours_logged", 0),
+                    "hours_target": wv.get("hours_target", 40),
+                    "labs_done": labs_done,
+                    "labs_total": labs_total,
+                    "qs_done": qs_done,
+                    "qs_total": qs_total,
+                    "notes": wv.get("notes", ""),
+                    "week_rating": wv.get("week_rating", 0),
                 })
 
-    done_projs = [p for p in all_projects if p["completed"]]
-    pending_projs = [p for p in all_projects if not p["completed"]]
+    # Filter controls
+    fcol1, fcol2, fcol3 = st.columns(3)
+    with fcol1:
+        phase_options = ["All Phases"] + [data["phases"][pk]["name"] for pk in data["phases"]]
+        filter_phase = st.selectbox("Phase", phase_options, key="proj_filter_phase")
+    with fcol2:
+        filter_status = st.selectbox("Status", ["All", "Completed", "Pending"], key="proj_filter_status")
+    with fcol3:
+        filter_impact = st.selectbox("Impact Written", ["All", "With Impact", "Missing Impact"], key="proj_filter_impact")
 
-    st.metric("Projects Completed", f"{len(done_projs)} / {len(all_projects)}")
+    filtered = all_projects
+    if filter_phase != "All Phases":
+        filtered = [p for p in filtered if p["phase"] == filter_phase]
+    if filter_status == "Completed":
+        filtered = [p for p in filtered if p["completed"]]
+    elif filter_status == "Pending":
+        filtered = [p for p in filtered if not p["completed"]]
+    if filter_impact == "With Impact":
+        filtered = [p for p in filtered if p["business_impact"]]
+    elif filter_impact == "Missing Impact":
+        filtered = [p for p in filtered if not p["business_impact"]]
 
-    tab1, tab2 = st.tabs([f"✅ Completed ({len(done_projs)})", f"⏳ Pending ({len(pending_projs)})"])
+    # Summary metrics
+    done_count = sum(1 for p in all_projects if p["completed"])
+    impact_count = sum(1 for p in all_projects if p["business_impact"])
+    pct = done_count / len(all_projects) * 100 if all_projects else 0
 
-    with tab1:
-        for proj in done_projs:
-            with st.expander(f"✅ {proj['name']}", expanded=False):
-                st.caption(f"{proj['phase']} · {proj['week']} · {proj['topic']}")
-                if proj["github_url"]:
-                    st.markdown(f"[View on GitHub]({proj['github_url']})")
-                if proj["business_impact"]:
-                    st.markdown('<div class="impact-box">', unsafe_allow_html=True)
-                    st.markdown(f"**Business Impact:** {proj['business_impact']}")
-                    st.markdown('</div>', unsafe_allow_html=True)
+    mc1, mc2, mc3, mc4 = st.columns(4)
+    with mc1: st.metric("Total Projects", len(all_projects))
+    with mc2: st.metric("Completed", done_count)
+    with mc3: st.metric("Completion Rate", f"{pct:.0f}%")
+    with mc4: st.metric("Impact Written", f"{impact_count}/{len(all_projects)}")
+    st.progress(pct / 100)
+    st.divider()
 
-    with tab2:
-        for proj in pending_projs[:10]:
-            with st.expander(f"⏳ {proj['name']}", expanded=False):
-                st.caption(f"{proj['phase']} · {proj['week']} · {proj['topic']}")
-                st.info("Start this project when you reach this week in the schedule.")
+    st.caption(f"Showing {len(filtered)} of {len(all_projects)} projects")
+
+    for proj in filtered:
+        status_icon = "✅" if proj["completed"] else "⏳"
+        star_rating = "⭐" * proj["week_rating"] if proj["week_rating"] > 0 else ""
+        label = f"{status_icon} **Week {proj['week_num']}** — {proj['name']}"
+
+        with st.expander(label, expanded=proj["completed"]):
+            # Info row
+            info_c1, info_c2, info_c3, info_c4 = st.columns([3, 1, 1, 1])
+            with info_c1:
+                st.caption(f"📁 {proj['phase']}  ·  🏷️ {proj['topic']}")
+            with info_c2:
+                st.caption(f"🔬 Labs: **{proj['labs_done']}/{proj['labs_total']}**")
+            with info_c3:
+                st.caption(f"🎤 Qs: **{proj['qs_done']}/{proj['qs_total']}**")
+            with info_c4:
+                if star_rating:
+                    st.caption(f"Rating: {star_rating}")
+
+            # Hours progress bar
+            if proj["hours_target"] > 0:
+                h_pct = min(proj["hours_logged"] / proj["hours_target"], 1.0)
+                st.progress(h_pct)
+                st.caption(f"⏱️ Hours: {proj['hours_logged']:.1f} / {proj['hours_target']}h  ({h_pct*100:.0f}%)")
+
+            st.divider()
+
+            # Editable fields
+            edit_c1, edit_c2 = st.columns([1, 2])
+            with edit_c1:
+                new_completed = st.checkbox(
+                    "Mark as completed",
+                    value=proj["completed"],
+                    key=f"proj_completed_{proj['week_key']}"
+                )
+                if new_completed != proj["completed"]:
+                    data["phases"][proj["phase_key"]]["weeks_data"][proj["week_key"]]["project"]["completed"] = new_completed
+                    save_data(data)
+                    st.rerun()
+
+            with edit_c2:
+                new_github = st.text_input(
+                    "GitHub Repository URL",
+                    value=proj["github_url"],
+                    key=f"proj_gh_{proj['week_key']}",
+                    placeholder="https://github.com/you/project-name"
+                )
+                if new_github != proj["github_url"]:
+                    data["phases"][proj["phase_key"]]["weeks_data"][proj["week_key"]]["project"]["github_url"] = new_github
+                    save_data(data)
+
+            if proj["github_url"]:
+                st.markdown(f"🔗 [View on GitHub]({proj['github_url']})")
+
+            st.markdown('<div class="consultant-tip">📌 <strong>Business Impact</strong> — quantify: time saved, cost reduced, reliability improved, scale enabled, incidents prevented</div>', unsafe_allow_html=True)
+            new_impact = st.text_area(
+                "Business Impact Statement",
+                value=proj["business_impact"],
+                key=f"proj_impact_{proj['week_key']}",
+                height=100,
+                placeholder="e.g. Reduced deployment time from 2 hours to 8 minutes (93% reduction). Enabled team to deploy 3× daily vs weekly. Eliminated weekend outages saving ~$15k/incident."
+            )
+            if new_impact != proj["business_impact"]:
+                data["phases"][proj["phase_key"]]["weeks_data"][proj["week_key"]]["project"]["business_impact"] = new_impact
+                save_data(data)
+
+            if new_impact:
+                st.markdown(f'<div class="impact-box">✅ <strong>Impact:</strong> {new_impact}</div>', unsafe_allow_html=True)
+
+            if proj["notes"]:
+                with st.expander("📝 Week Notes"):
+                    st.markdown(proj["notes"])
 
 # ─── Certifications ───────────────────────────────────────────────────────────
 elif page == "🎓 Certifications":
@@ -708,13 +845,19 @@ elif page == "📓 Daily Log":
     st.title("📓 Daily Learning Log")
     st.markdown("*Log every study session. This becomes evidence of your discipline.*")
 
+    # Show timer result banner if timer was just stopped
+    timer_hours = st.session_state.get("timer_elapsed_hours", 0.0)
+    if timer_hours:
+        st.success(f"⏱️ Timer stopped — **{timer_hours:.2f}h** pre-filled below. Fill in the details and submit.")
+
     with st.form("daily_log_form"):
         col1, col2 = st.columns(2)
         with col1:
             log_date = st.date_input("Date", date.today())
             session_type = st.selectbox("Session", ["Morning (Theory)", "Evening (Lab)", "Saturday (Project)", "Sunday (Review)", "Interview Prep"])
         with col2:
-            hours = st.number_input("Hours", 0.0, 8.0, 1.5, 0.25)
+            default_hours = float(timer_hours) if timer_hours else 1.5
+            hours = st.number_input("Hours", 0.0, 8.0, default_hours, 0.25)
             week_num = st.number_input("Week #", 1, 36, data["profile"].get("current_week", 1))
 
         topic = st.text_input("Topic covered", placeholder="e.g. Linux namespaces, cgroups, container internals")
@@ -745,6 +888,7 @@ elif page == "📓 Daily Log":
                 current_hours = data["phases"][phase_key]["weeks_data"][week_key].get("hours_logged", 0)
                 data["phases"][phase_key]["weeks_data"][week_key]["hours_logged"] = current_hours + hours
             save_data(data)
+            st.session_state.timer_elapsed_hours = None  # clear timer after logging
             st.success(f"Logged {hours}h for {topic}!")
 
     st.divider()

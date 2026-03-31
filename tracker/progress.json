@@ -1,1 +1,973 @@
-{}
+{
+  "profile": {
+    "name": "Rahul Shende",
+    "start_date": "2026-03-31",
+    "target_role": "Senior/Staff DevOps Engineer",
+    "current_week": 1,
+    "streak_days": 0,
+    "last_activity": "2026-03-31",
+    "total_hours_logged": 0.0,
+    "github_url": "https://github.com/shende12rahul2/devops"
+  },
+  "phases": {
+    "phase_1": {
+      "name": "Foundations & Mindset",
+      "weeks": "1-4",
+      "total_hours": 160,
+      "color": "#4F46E5",
+      "weeks_data": {
+        "week_1": {
+          "topic": "Linux Deep Dive",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "1.1 Permission hardening audit script": false,
+            "1.2 Systemd service creation": false,
+            "1.3 Production bash script (error handling)": false,
+            "1.4 Network troubleshooting toolkit": false,
+            "1.5 Kernel parameter tuning": false
+          },
+          "project": {
+            "name": "Enterprise Linux Sysadmin Toolkit v1.0",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 99% CPU diagnosis walkthrough": false,
+            "Q2 Hard link vs soft link": false,
+            "Q3 Linux process scheduler (CFS)": false,
+            "Q4 cgroups v2 + Kubernetes connection": false,
+            "Q5 Disk full \u2014 exact steps": false,
+            "Q6 File descriptors + 'too many open files'": false,
+            "Q7 SIGTERM vs SIGKILL + graceful shutdown": false,
+            "Q8 Virtual memory + swap strategy": false,
+            "Q9 Nice values + real-time scheduling": false,
+            "Q10 SELinux/AppArmor in production": false,
+            "Q11 Behavioral: production incident STAR": false,
+            "Q12 Performance tuning methodology": false,
+            "Q13 'Everything is a file' explanation": false,
+            "Q14 New server provisioning walkthrough": false,
+            "Q15 inode exhaustion diagnosis": false,
+            "Q16 Memory leak identification": false,
+            "Q17 Boot process (BIOS to shell)": false,
+            "Q18 Process vs thread": false,
+            "Q19 Kernel scheduling deep dive": false,
+            "Q20 STAR: time I improved system performance": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 1,
+          "completed": false
+        },
+        "week_2": {
+          "topic": "Networking Mastery",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "2.1 TCP/IP deep dive with tcpdump": false,
+            "2.2 DNS resolution tracing + health checker": false,
+            "2.3 HAProxy load balancer setup": false,
+            "2.4 iptables firewall ruleset": false,
+            "2.5 WireGuard VPN server": false
+          },
+          "project": {
+            "name": "Network Diagnostic & Monitoring Suite",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 google.com in browser \u2014 full technical": false,
+            "Q2 TCP 3-way handshake + TIME_WAIT": false,
+            "Q3 HTTPS/TLS handshake deep dive": false,
+            "Q4 L4 vs L7 load balancing": false,
+            "Q5 DNS authoritative vs recursive": false,
+            "Q6 BGP basics (enterprise networking)": false,
+            "Q7 CDN how it works": false,
+            "Q8 TCP vs UDP \u2014 when to use each": false,
+            "Q9 Network packet loss diagnosis": false,
+            "Q10 VPN protocols comparison": false,
+            "Q11 VLAN and network segmentation": false,
+            "Q12 HTTP/2 vs HTTP/3 differences": false,
+            "Q13 NAT types and implications": false,
+            "Q14 BEHAVIORAL: network incident I led": false,
+            "Q15 Zero-downtime DNS cutover": false,
+            "Q16 Rate limiting strategies": false,
+            "Q17 WebSocket vs HTTP connection": false,
+            "Q18 Firewall rules \u2014 design approach": false,
+            "Q19 Network monitoring golden signals": false,
+            "Q20 STAR: time I prevented network incident": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_3": {
+          "topic": "Git & Collaboration at Scale",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "3.1 Git internals \u2014 objects, trees, commits": false,
+            "3.2 Advanced merge strategies + conflict resolution": false,
+            "3.3 Git hooks for automated quality gates": false,
+            "3.4 Trunk-based development workflow": false,
+            "3.5 GitOps repo structure design": false
+          },
+          "project": {
+            "name": "Enterprise Git Workflow System",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 git rebase vs merge \u2014 when to use each": false,
+            "Q2 git bisect for bug hunting": false,
+            "Q3 git reflog \u2014 recover lost commits": false,
+            "Q4 Branching strategies comparison": false,
+            "Q5 Trunk-based development trade-offs": false,
+            "Q6 Conventional commits + semantic versioning": false,
+            "Q7 Git hooks \u2014 what you use in prod": false,
+            "Q8 Monorepo vs polyrepo strategy": false,
+            "Q9 BEHAVIORAL: secrets in git history incident": false,
+            "Q10 Code review best practices": false,
+            "Q11 Git submodules vs subtrees": false,
+            "Q12 Large file storage (Git LFS)": false,
+            "Q13 GitOps vs traditional deployment": false,
+            "Q14 STAR: improved team git workflow": false,
+            "Q15 Squash merge strategy": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_4": {
+          "topic": "Communication & Python Automation",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "4.1 Python sysadmin automation scripts": false,
+            "4.2 REST API interaction + error handling": false,
+            "4.3 JSON/YAML parsing + manipulation": false,
+            "4.4 Cron job automation with alerting": false,
+            "4.5 Documentation-as-code with diagrams": false
+          },
+          "project": {
+            "name": "Infrastructure Automation Suite v1.0",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 Production bash script standards": false,
+            "Q2 Python vs bash \u2014 when to use each": false,
+            "Q3 API rate limiting + retry strategies": false,
+            "Q4 YAML anchors + aliases": false,
+            "Q5 Idempotency in automation scripts": false,
+            "Q6 STAR: automated a manual process \u2014 ROI": false,
+            "Q7 Error handling patterns": false,
+            "Q8 Structured logging standards": false,
+            "Q9 Script security \u2014 injection prevention": false,
+            "Q10 Testing infrastructure code": false,
+            "Q11 Documentation as code tools": false,
+            "Q12 Explain tech to non-technical audience": false,
+            "Q13 On-call runbook writing": false,
+            "Q14 STAR: communication improved a project": false,
+            "Q15 10 STAR stories prepared": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        }
+      }
+    },
+    "phase_2": {
+      "name": "Core DevOps Stack",
+      "weeks": "5-10",
+      "total_hours": 240,
+      "color": "#0891B2",
+      "weeks_data": {
+        "week_5": {
+          "topic": "Docker & Container Internals",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "5.1 Container from scratch (namespaces)": false,
+            "5.2 Multi-stage build optimisation (1GB \u2192 50MB)": false,
+            "5.3 Container security hardening + Trivy": false,
+            "5.4 Docker networking (bridge, overlay, host)": false,
+            "5.5 Private registry (Harbor) setup": false
+          },
+          "project": {
+            "name": "Production Containerised Microservices Platform",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 docker run nginx \u2014 what happens": false,
+            "Q2 Debug crashing container": false,
+            "Q3 Layer caching optimisation": false,
+            "Q4 ENTRYPOINT vs CMD": false,
+            "Q5 Zero-downtime container deployment": false,
+            "Q6 Container namespaces deep dive": false,
+            "Q7 cgroups in containers": false,
+            "Q8 Docker networking modes": false,
+            "Q9 Image security scanning": false,
+            "Q10 Multi-stage build strategy": false,
+            "Q11 Docker registry \u2014 pull/push mechanics": false,
+            "Q12 Container runtime (containerd)": false,
+            "Q13 OCI spec": false,
+            "Q14 STAR: containerisation project impact": false,
+            "Q15 Rootless containers": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_6": {
+          "topic": "Kubernetes Core Architecture",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "6.1 kubeadm cluster from scratch": false,
+            "6.2 Pod scheduling \u2014 affinity, taints, tolerations": false,
+            "6.3 ConfigMaps, Secrets, ServiceAccounts": false,
+            "6.4 Services \u2014 all 4 types": false,
+            "6.5 PVs, StorageClasses, dynamic provisioning": false
+          },
+          "project": {
+            "name": "Multi-tier Production App on Kubernetes",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 kubectl apply \u2014 full internal flow": false,
+            "Q2 Pod stuck in CrashLoopBackOff": false,
+            "Q3 Pod stuck in Pending": false,
+            "Q4 etcd role + backup strategy": false,
+            "Q5 Scheduler decision algorithm": false,
+            "Q6 kubelet responsibilities": false,
+            "Q7 kube-proxy modes (iptables vs IPVS)": false,
+            "Q8 CoreDNS in Kubernetes": false,
+            "Q9 Service types and use cases": false,
+            "Q10 StatefulSet vs Deployment": false,
+            "Q11 DaemonSet use cases": false,
+            "Q12 Resource requests vs limits": false,
+            "Q13 QoS classes (Guaranteed, Burstable, BestEffort)": false,
+            "Q14 STAR: K8s migration project": false,
+            "Q15 Rolling update with zero downtime": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_7": {
+          "topic": "K8s Security + ArgoCD GitOps",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "7.1 RBAC full implementation": false,
+            "7.2 Network Policies \u2014 zero-trust": false,
+            "7.3 HPA, VPA, Cluster Autoscaler": false,
+            "7.4 Helm chart authoring from scratch": false,
+            "7.5 ArgoCD GitOps pipeline": false
+          },
+          "project": {
+            "name": "Secure Auto-scaling K8s Cluster",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 Kubernetes RBAC design": false,
+            "Q2 Secrets management (ESO + Vault)": false,
+            "Q3 Network Policy implementation": false,
+            "Q4 Pod Security Standards": false,
+            "Q5 HPA vs VPA \u2014 when to use": false,
+            "Q6 Cluster Autoscaler vs Karpenter": false,
+            "Q7 Helm chart architecture": false,
+            "Q8 GitOps principles (Argo vs Flux)": false,
+            "Q9 OPA/Gatekeeper policies": false,
+            "Q10 Admission webhooks": false,
+            "Q11 Multi-tenant cluster design": false,
+            "Q12 RBAC least privilege implementation": false,
+            "Q13 K8s audit logging": false,
+            "Q14 STAR: security hardening impact": false,
+            "Q15 Supply chain security in K8s": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_8": {
+          "topic": "CI/CD Pipeline Engineering",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "8.1 GitHub Actions reusable workflows": false,
+            "8.2 Full pipeline: test\u2192scan\u2192build\u2192sign\u2192deploy": false,
+            "8.3 Canary deployment with auto-rollback": false,
+            "8.4 Feature flags (Flagsmith)": false,
+            "8.5 Pipeline caching and parallelism": false
+          },
+          "project": {
+            "name": "Enterprise CI/CD Platform",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 CI/CD pipeline design for 500 devs": false,
+            "Q2 Deployment strategies comparison": false,
+            "Q3 Pipeline security (SLSA, SBOM, cosign)": false,
+            "Q4 Build time optimisation": false,
+            "Q5 Rollback strategy": false,
+            "Q6 Feature flags \u2014 implementation": false,
+            "Q7 Trunk-based dev + CI": false,
+            "Q8 Secrets in pipelines": false,
+            "Q9 Matrix builds": false,
+            "Q10 Pipeline observability": false,
+            "Q11 GitOps vs push-based deploy": false,
+            "Q12 DORA metrics and how to improve": false,
+            "Q13 Pipeline testing (testing the CI)": false,
+            "Q14 STAR: pipeline improvement impact": false,
+            "Q15 Multi-cloud deploy strategy": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_9": {
+          "topic": "Terraform + IaC at Scale",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "9.1 Terraform modules (reusable, versioned)": false,
+            "9.2 Remote state with S3 + DynamoDB locking": false,
+            "9.3 Terragrunt multi-env IaC": false,
+            "9.4 Ansible roles with molecule testing": false,
+            "9.5 Policy as Code (Sentinel/OPA)": false
+          },
+          "project": {
+            "name": "Multi-environment AWS Infrastructure Platform",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 Terraform state management": false,
+            "Q2 Terraform module design": false,
+            "Q3 terraform import \u2014 existing resources": false,
+            "Q4 Terragrunt vs Terraform workspaces": false,
+            "Q5 IaC testing strategies": false,
+            "Q6 Drift detection and remediation": false,
+            "Q7 Policy as Code implementation": false,
+            "Q8 Ansible idempotency": false,
+            "Q9 Pulumi vs Terraform": false,
+            "Q10 CDK for Terraform (CDKTF)": false,
+            "Q11 Managing secrets in IaC": false,
+            "Q12 Multi-account AWS strategy": false,
+            "Q13 IaC review process": false,
+            "Q14 STAR: IaC transformation project": false,
+            "Q15 Disaster recovery via IaC": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_10": {
+          "topic": "Cloud Architecture \u2014 AWS Deep Dive",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {
+            "10.1 VPC design (multi-AZ, private/public)": false,
+            "10.2 IAM \u2014 roles, SCPs, permission boundaries": false,
+            "10.3 EKS with Karpenter autoscaler": false,
+            "10.4 CloudWatch \u2192 Prometheus federation": false,
+            "10.5 AWS Well-Architected review": false
+          },
+          "project": {
+            "name": "Production AWS Multi-Account Architecture",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {
+            "Q1 AWS VPC design (enterprise)": false,
+            "Q2 IAM least privilege + SCPs": false,
+            "Q3 EKS vs self-managed K8s": false,
+            "Q4 AWS networking (Transit Gateway, PrivateLink)": false,
+            "Q5 Multi-account strategy (AWS Organizations)": false,
+            "Q6 Cost optimisation strategies": false,
+            "Q7 Well-Architected 6 pillars": false,
+            "Q8 Spot instances + Karpenter": false,
+            "Q9 RDS vs Aurora + HA strategy": false,
+            "Q10 S3 + lifecycle policies": false,
+            "Q11 CloudFront + WAF": false,
+            "Q12 Route53 routing policies": false,
+            "Q13 Service limits + quota management": false,
+            "Q14 STAR: cloud cost reduction": false,
+            "Q15 Multi-region architecture": false
+          },
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        }
+      }
+    },
+    "phase_3": {
+      "name": "Enterprise Practices",
+      "weeks": "11-18",
+      "total_hours": 320,
+      "color": "#D97706",
+      "weeks_data": {
+        "week_11": {
+          "topic": "DevSecOps \u2014 Shift Left Security",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Secure CI/CD Pipeline with Policy Gates",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_12": {
+          "topic": "Secrets Management (Vault)",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Enterprise Secrets Management Platform",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_13": {
+          "topic": "Service Mesh (Istio/Linkerd)",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Zero-Trust Service Mesh Implementation",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_14": {
+          "topic": "Observability Stack (Prometheus+Grafana+OTel)",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Full Observability Platform",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_15": {
+          "topic": "SRE \u2014 SLOs, Error Budgets, Incidents",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "SLO-based Alerting + Error Budget Dashboard",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_16": {
+          "topic": "Chaos Engineering",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "GameDay Chaos Engineering Program",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_17": {
+          "topic": "FinOps + Cloud Cost Engineering",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Cloud Cost Optimisation Platform",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_18": {
+          "topic": "Compliance as Code + Audit",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "SOC2 Evidence Collection Automation",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        }
+      }
+    },
+    "phase_4": {
+      "name": "Architectural Thinking",
+      "weeks": "19-26",
+      "total_hours": 320,
+      "color": "#16A34A",
+      "weeks_data": {
+        "week_19": {
+          "topic": "System Design for DevOps",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Design: CI/CD for 1000-person Org",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_20": {
+          "topic": "Multi-region HA Architecture",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Multi-region Active-Active Deployment",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_21": {
+          "topic": "Platform Engineering + Backstage",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Internal Developer Platform (IDP)",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_22": {
+          "topic": "Microservices Patterns + Event-Driven",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Event-Driven Microservices on K8s",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_23": {
+          "topic": "Kubernetes Operators + CRDs",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Custom Kubernetes Operator",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_24": {
+          "topic": "Database Reliability Engineering",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Database HA + Backup Automation",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_25": {
+          "topic": "AI/ML Infrastructure (MLOps)",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "ML Pipeline on Kubernetes (Kubeflow)",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_26": {
+          "topic": "Architecture Review + Portfolio",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Architecture Decision Records (ADR) Portfolio",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        }
+      }
+    },
+    "phase_5": {
+      "name": "Leadership & Communication",
+      "weeks": "27-36",
+      "total_hours": 400,
+      "color": "#DC2626",
+      "weeks_data": {
+        "week_27": {
+          "topic": "Engineering Leadership Fundamentals",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Team Health Framework",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_28": {
+          "topic": "Mentoring + Technical Bar-Raising",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Mentoring Framework + Interview Rubric",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_29": {
+          "topic": "Executive Communication",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Quarterly Platform Review Presentation",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_30": {
+          "topic": "DevOps Culture + Change Management",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "DevOps Transformation Roadmap",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_31": {
+          "topic": "DORA Metrics + Engineering Effectiveness",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "DORA Metrics Dashboard",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_32": {
+          "topic": "On-Call + Incident Management Culture",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "On-Call Programme Design",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_33": {
+          "topic": "Open Source + Community",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "First OSS Contribution Merged",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_34": {
+          "topic": "Interview Intensive \u2014 Mock Rounds",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "10 Mock Interviews Completed",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_35": {
+          "topic": "Portfolio Polish + LinkedIn",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "Portfolio Blog + LinkedIn Optimised",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        },
+        "week_36": {
+          "topic": "Final Review + Job Application Sprint",
+          "hours_target": 40,
+          "hours_logged": 0,
+          "labs": {},
+          "project": {
+            "name": "30 Applications Submitted",
+            "completed": false,
+            "github_url": "",
+            "business_impact": ""
+          },
+          "interview_prep": {},
+          "morning_sessions": 0,
+          "evening_sessions": 0,
+          "notes": "",
+          "week_rating": 0,
+          "completed": false
+        }
+      }
+    }
+  },
+  "certifications": {
+    "CKA": {
+      "status": "not_started",
+      "target_date": "",
+      "score": "",
+      "notes": ""
+    },
+    "CKAD": {
+      "status": "not_started",
+      "target_date": "",
+      "score": "",
+      "notes": ""
+    },
+    "CKS": {
+      "status": "not_started",
+      "target_date": "",
+      "score": "",
+      "notes": ""
+    },
+    "AWS_SAP": {
+      "status": "not_started",
+      "target_date": "",
+      "score": "",
+      "notes": ""
+    },
+    "Terraform_Associate": {
+      "status": "not_started",
+      "target_date": "",
+      "score": "",
+      "notes": ""
+    },
+    "Vault_Associate": {
+      "status": "not_started",
+      "target_date": "",
+      "score": "",
+      "notes": ""
+    }
+  },
+  "daily_logs": [],
+  "interview_sessions": [],
+  "consultant_journal": []
+}
