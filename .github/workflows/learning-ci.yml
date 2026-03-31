@@ -1,0 +1,112 @@
+name: DevOps Learning CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 9 * * 1'  # Weekly Monday reminder
+
+jobs:
+  validate-lab-scripts:
+    name: Validate Lab Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Lint all bash scripts
+        run: |
+          find . -name "*.sh" -not -path "./.git/*" | while read script; do
+            echo "Checking: $script"
+            shellcheck "$script" || true
+          done
+
+      - name: Check script headers (set -euo pipefail)
+        run: |
+          find . -name "*.sh" -not -path "./.git/*" | while read script; do
+            if ! grep -q "set -euo pipefail" "$script"; then
+              echo "WARNING: $script missing 'set -euo pipefail'"
+            fi
+          done
+
+  validate-yaml:
+    name: Validate YAML/K8s Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Lint YAML files
+        run: |
+          find . -name "*.yml" -o -name "*.yaml" | \
+            grep -v ".github/workflows" | \
+            head -20 | \
+            xargs -I{} yamllint -d relaxed {} || true
+
+  check-progress:
+    name: Progress Report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Count completed items
+        run: |
+          echo "=== DevOps Mastery Progress Report ==="
+          echo "Scripts:"
+          find . -name "*.sh" | grep -v ".git" | wc -l
+
+          echo "Python files:"
+          find . -name "*.py" | grep -v ".git" | grep -v __pycache__ | wc -l
+
+          echo "K8s manifests:"
+          find . -name "*.yaml" -o -name "*.yml" | grep -v ".git" | wc -l
+
+          echo "Terraform files:"
+          find . -name "*.tf" | wc -l
+
+          echo "Total files committed:"
+          git ls-files | wc -l
+
+          echo "Commits this week:"
+          git log --oneline --since="7 days ago" | wc -l
+
+  security-scan:
+    name: Security Scan Scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  weekly-reminder:
+    name: Weekly Progress Reminder
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Weekly reminder
+        run: |
+          echo "=== WEEKLY DEVOPS MASTERY REVIEW ==="
+          echo "Date: $(date)"
+          echo ""
+          echo "Checklist:"
+          echo "□ Did I log 40 hours this week?"
+          echo "□ Did I complete all 5 labs?"
+          echo "□ Did I push my project to GitHub?"
+          echo "□ Did I practice 10 interview questions?"
+          echo "□ Did I write my LinkedIn post?"
+          echo "□ Did I fill in my Consultant Journal?"
+          echo "□ Did I update the Streamlit tracker?"
+          echo ""
+          echo "git log --oneline -7:"
+          git log --oneline -7 || echo "No commits yet"
