@@ -1,0 +1,283 @@
+name: Deploy IDP Platform
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'idp-platform/**'
+      - '.github/workflows/deploy-idp.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'idp-platform/**'
+      - '.github/workflows/deploy-idp.yml'
+
+env:
+  TF_VERSION: '1.5.0'
+  AWS_REGION: us-east-1
+  TF_VAR_aws_region: us-east-1
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./idp-platform
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        terraform plan -no-color -out=tfplan
+      continue-on-error: true
+
+    - name: Update Pull Request
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Validate 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve tfplan
+
+  deploy-backstage:
+    name: 'Deploy Backstage'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: terraform
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./idp-platform
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name idp-platform
+
+    - name: Deploy Backstage Configuration
+      run: |
+        # Apply Backstage configuration
+        kubectl apply -f backstage-config.yaml
+
+        # Wait for Backstage deployment
+        kubectl wait --for=condition=available --timeout=600s deployment/backstage -n backstage
+
+    - name: Run Backstage Health Check
+      run: |
+        # Get Backstage service URL
+        BACKSTAGE_URL=$(kubectl get ingress backstage -n backstage -o jsonpath='{.spec.rules[0].host}')
+        echo "Backstage URL: https://$BACKSTAGE_URL"
+
+        # Health check
+        kubectl run health-check --image=curlimages/curl --rm -i --restart=Never -- curl -f https://$BACKSTAGE_URL/healthcheck
+
+  deploy-crossplane:
+    name: 'Deploy Crossplane'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: terraform
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./idp-platform
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name idp-platform
+
+    - name: Deploy Crossplane Providers
+      run: |
+        # Apply Crossplane provider configurations
+        kubectl apply -f crossplane-providers.yaml
+
+        # Wait for providers to be ready
+        kubectl wait --for=condition=ready --timeout=300s provider.pkg.crossplane.io/provider-aws
+        kubectl wait --for=condition=ready --timeout=300s provider.pkg.crossplane.io/provider-azure
+        kubectl wait --for=condition=ready --timeout=300s provider.pkg.crossplane.io/provider-gcp
+
+    - name: Verify Crossplane Installation
+      run: |
+        # Check Crossplane pods
+        kubectl get pods -n crossplane-system
+
+        # Check provider status
+        kubectl get providers.pkg.crossplane.io
+
+  integration-test:
+    name: 'Integration Tests'
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [deploy-backstage, deploy-crossplane]
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./idp-platform
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+
+    - name: Configure kubectl
+      run: |
+        aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name idp-platform
+
+    - name: Test Backstage Connectivity
+      run: |
+        # Test Backstage API
+        BACKSTAGE_URL=$(kubectl get ingress backstage -n backstage -o jsonpath='{.spec.rules[0].host}')
+        curl -f https://$BACKSTAGE_URL/api/catalog/entities
+
+    - name: Test Crossplane Functionality
+      run: |
+        # Test Crossplane by creating a simple resource
+        cat <<EOF | kubectl apply -f -
+        apiVersion: s3.aws.crossplane.io/v1beta1
+        kind: Bucket
+        metadata:
+          name: idp-test-bucket
+          namespace: default
+        spec:
+          forProvider:
+            region: us-east-1
+          providerConfigRef:
+            name: aws-provider
+        EOF
+
+        # Wait for bucket creation
+        kubectl wait --for=condition=ready --timeout=300s bucket.s3.aws.crossplane.io/idp-test-bucket
+
+        # Clean up test resource
+        kubectl delete bucket.s3.aws.crossplane.io/idp-test-bucket
+
+    - name: Test ArgoCD Integration
+      run: |
+        # Test ArgoCD connectivity
+        ARGOCD_URL=$(kubectl get ingress argocd-server -n argocd -o jsonpath='{.spec.rules[0].host}')
+        curl -k https://$ARGOCD_URL/login
+
+  notify:
+    name: 'Notify Deployment'
+    runs-on: ubuntu-latest
+    needs: [terraform, deploy-backstage, deploy-crossplane, integration-test]
+    if: always()
+
+    steps:
+    - name: Notify Slack
+      uses: 8398a7/action-slack@v3
+      if: always()
+      with:
+        status: ${{ job.status }}
+        text: |
+          IDP Platform Deployment ${{ job.status == 'success' && 'Successful' || 'Failed' }}
+
+          Jobs Summary:
+          - Terraform: ${{ needs.terraform.result }}
+          - Backstage: ${{ needs.deploy-backstage.result }}
+          - Crossplane: ${{ needs.deploy-crossplane.result }}
+          - Integration Tests: ${{ needs.integration-test.result }}
+
+          ${{ job.status == 'success' && '🎉 IDP Platform is ready!' || '❌ Deployment failed. Check logs for details.' }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

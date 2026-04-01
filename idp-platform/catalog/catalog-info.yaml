@@ -1,0 +1,167 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: project-1-cicd-platform
+  description: Multi-cloud CI/CD Platform with GitHub Actions and ArgoCD
+  tags:
+    - cicd
+    - github-actions
+    - argocd
+    - multi-cloud
+  links:
+    - url: https://github.com/my-org/project-1-cicd-platform
+      title: Source Code
+    - url: https://argocd.idp.example.com/applications/project-1
+      title: ArgoCD Application
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: my-org/project-1-cicd-platform
+    argocd/app-name: project-1-cicd-platform
+spec:
+  type: service
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  dependsOn:
+    - component:project-2-service-mesh
+    - component:project-3-observability
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: project-2-service-mesh
+  description: Istio service mesh with advanced traffic management and Crossplane infrastructure
+  tags:
+    - istio
+    - service-mesh
+    - crossplane
+    - traffic-management
+  links:
+    - url: https://github.com/my-org/project-2-service-mesh
+      title: Source Code
+    - url: https://kiali.idp.example.com
+      title: Service Mesh Dashboard
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: my-org/project-2-service-mesh
+    argocd/app-name: project-2-service-mesh
+spec:
+  type: service
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  providesApis:
+    - traffic-management-api
+  dependsOn:
+    - component:project-3-observability
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: project-3-observability
+  description: Enterprise observability platform with error budgets and SLO management
+  tags:
+    - observability
+    - prometheus
+    - grafana
+    - error-budgets
+    - slo
+  links:
+    - url: https://github.com/my-org/project-3-observability
+      title: Source Code
+    - url: https://grafana.idp.example.com
+      title: Observability Dashboard
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: my-org/project-3-observability
+    argocd/app-name: project-3-observability
+spec:
+  type: service
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  providesApis:
+    - metrics-api
+    - logs-api
+    - traces-api
+---
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: devops-platform
+  description: Complete DevOps platform with CI/CD, service mesh, and observability
+spec:
+  owner: platform-team
+  domain: platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: platform
+  description: Platform engineering domain
+spec:
+  owner: platform-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: platform-team
+  description: Platform engineering team
+spec:
+  type: team
+  profile:
+    displayName: Platform Team
+    email: platform@company.com
+  children: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: traffic-management-api
+  description: Service mesh traffic management API
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  definition:
+    $text: https://raw.githubusercontent.com/my-org/project-2-service-mesh/main/api/traffic-management.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: metrics-api
+  description: Observability metrics API
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  definition:
+    $text: https://raw.githubusercontent.com/my-org/project-3-observability/main/api/metrics.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: logs-api
+  description: Centralized logging API
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  definition:
+    $text: https://raw.githubusercontent.com/my-org/project-3-observability/main/api/logs.yaml
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: traces-api
+  description: Distributed tracing API
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: devops-platform
+  definition:
+    $text: https://raw.githubusercontent.com/my-org/project-3-observability/main/api/traces.yaml

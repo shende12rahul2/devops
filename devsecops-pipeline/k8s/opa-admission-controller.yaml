@@ -1,0 +1,323 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opa
+  labels:
+    name: opa
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opa
+  namespace: opa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: opa
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "namespaces", "nodes", "secrets", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies", "ingresses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["policy"]
+  resources: ["poddisruptionbudgets", "podsecuritypolicies"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: opa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: opa
+subjects:
+- kind: ServiceAccount
+  name: opa
+  namespace: opa
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+  namespace: opa
+  labels:
+    app: opa
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8181"
+    spec:
+      serviceAccountName: opa
+      containers:
+      - name: opa
+        image: openpolicyagent/opa:0.59.0
+        ports:
+        - containerPort: 8181
+          name: http
+        args:
+        - run
+        - --server
+        - --addr=http://0.0.0.0:8181
+        - --log-level=info
+        - --set=decision_logs.console=true
+        - /policies
+        volumeMounts:
+        - name: policies
+          mountPath: /policies
+          readOnly: true
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8181
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8181
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: policies
+        configMap:
+          name: opa-policies
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa
+  namespace: opa
+spec:
+  selector:
+    app: opa
+  ports:
+  - name: http
+    port: 8181
+    targetPort: 8181
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-policies
+  namespace: opa
+data:
+  kubernetes-security.rego: |
+    package main
+
+    import data.kubernetes
+
+    # Deny privileged containers
+    deny_privileged[msg] {
+        input.kind == "Pod"
+        container := input.spec.containers[_]
+        container.securityContext.privileged == true
+        msg := sprintf("Privileged container not allowed: %s", [container.name])
+    }
+
+    # Deny containers running as root
+    deny_root_user[msg] {
+        input.kind == "Pod"
+        container := input.spec.containers[_]
+        not container.securityContext.runAsNonRoot == true
+        not container.securityContext.runAsUser >= 1000
+        msg := sprintf("Container must not run as root: %s", [container.name])
+    }
+
+    # Deny containers with host network access
+    deny_host_network[msg] {
+        input.kind == "Pod"
+        input.spec.hostNetwork == true
+        msg := "Host network access not allowed"
+    }
+
+    # Deny containers with dangerous capabilities
+    deny_dangerous_capabilities[msg] {
+        input.kind == "Pod"
+        container := input.spec.containers[_]
+        capability := container.securityContext.capabilities.add[_]
+        dangerous_caps := {"NET_ADMIN", "SYS_ADMIN", "SYS_PTRACE", "SYS_MODULE"}
+        dangerous_caps[capability]
+        msg := sprintf("Dangerous capability not allowed: %s in container %s", [capability, container.name])
+    }
+
+    # Require resource limits
+    require_resource_limits[msg] {
+        input.kind == "Pod"
+        container := input.spec.containers[_]
+        not container.resources.limits
+        msg := sprintf("Resource limits required for container: %s", [container.name])
+    }
+
+    # Require resource requests
+    require_resource_requests[msg] {
+        input.kind == "Pod"
+        container := input.spec.containers[_]
+        not container.resources.requests
+        msg := sprintf("Resource requests required for container: %s", [container.name])
+    }
+
+    # Deny latest tag usage
+    deny_latest_tag[msg] {
+        input.kind == "Pod"
+        container := input.spec.containers[_]
+        endswith(container.image, ":latest")
+        msg := sprintf("Latest tag not allowed: %s", [container.image])
+    }
+
+    # Require probes for production workloads
+    require_probes[msg] {
+        input.kind == "Pod"
+        input.metadata.namespace == "production"
+        container := input.spec.containers[_]
+        not container.livenessProbe
+        msg := sprintf("Liveness probe required for production container: %s", [container.name])
+    }
+
+    # Require labels for organization
+    require_labels[msg] {
+        input.kind == "Pod"
+        required_labels := {"app", "version", "environment"}
+        label := required_labels[_]
+        not input.metadata.labels[label]
+        msg := sprintf("Required label missing: %s", [label])
+    }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: opa-validating-webhook
+webhooks:
+- name: validating-webhook.openpolicyagent.org
+  admissionReviewVersions: ["v1", "v1beta1"]
+  sideEffects: None
+  timeoutSeconds: 30
+  failurePolicy: Fail
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: [""]
+    apiVersions: ["v1"]
+    resources: ["pods", "services", "configmaps", "secrets"]
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["apps"]
+    apiVersions: ["v1"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["batch"]
+    apiVersions: ["v1"]
+    resources: ["jobs", "cronjobs"]
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["networking.k8s.io"]
+    apiVersions: ["v1"]
+    resources: ["networkpolicies", "ingresses"]
+  clientConfig:
+    service:
+      name: opa
+      namespace: opa
+      path: /v1/data/main/deny
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0t... # Replace with actual CA bundle
+  namespaceSelector:
+    matchLabels:
+      opa-validate: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: opa-config
+  namespace: opa
+data:
+  config.yaml: |
+    services:
+      kubernetes:
+        url: https://kubernetes.default.svc.cluster.local
+    labels:
+      version: v1
+    bundles:
+      authz:
+        service: kubernetes
+        resource: /api/v1/namespaces/opa/configmaps/opa-policies
+        persist: true
+        polling:
+          min_delay_seconds: 60
+          max_delay_seconds: 120
+    decision_logs:
+      console: true
+      service: kubernetes
+      resource: /api/v1/namespaces/opa/events
+      partition_name: k8s
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: opa-pdb
+  namespace: opa
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: opa
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: opa-network-policy
+  namespace: opa
+spec:
+  podSelector:
+    matchLabels:
+      app: opa
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    - podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: TCP
+      port: 8181
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    - podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443

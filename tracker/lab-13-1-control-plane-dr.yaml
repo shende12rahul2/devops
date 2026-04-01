@@ -1,0 +1,117 @@
+# Kubernetes Control Plane Disaster Recovery Lab
+# Week 13, Day 7: Lab 13.1
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: etcd-backup-pod
+  namespace: kube-system
+spec:
+  containers:
+  - name: etcdctl
+    image: k8s.gcr.io/etcd:3.5.0-0
+    command:
+    - /bin/sh
+    - -c
+    - |
+      etcdctl --endpoints=https://127.0.0.1:2379 \
+        --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+        --cert=/etc/kubernetes/pki/etcd/server.crt \
+        --key=/etc/kubernetes/pki/etcd/server.key \
+        snapshot save /backup/etcd-snapshot-$(date +%Y%m%d-%H%M%S).db
+    volumeMounts:
+    - name: etcd-certs
+      mountPath: /etc/kubernetes/pki/etcd
+      readOnly: true
+    - name: backup-volume
+      mountPath: /backup
+  volumes:
+  - name: etcd-certs
+    hostPath:
+      path: /etc/kubernetes/pki/etcd
+  - name: backup-volume
+    hostPath:
+      path: /var/lib/etcd-backup
+  hostNetwork: true
+  restartPolicy: Never
+
+---
+# Certificate Rotation Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cert-renewal
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: cert-renewal
+        image: k8s.gcr.io/kube-apiserver:v1.24.0
+        command:
+        - kubeadm
+        - certs
+        - renew
+        - all
+        volumeMounts:
+        - name: certs
+          mountPath: /etc/kubernetes/pki
+        - name: config
+          mountPath: /etc/kubernetes
+      volumes:
+      - name: certs
+        hostPath:
+          path: /etc/kubernetes/pki
+      - name: config
+        hostPath:
+          path: /etc/kubernetes
+      hostNetwork: true
+      restartPolicy: Never
+  backoffLimit: 1
+
+---
+# Control Plane Monitoring Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: control-plane-alerts
+  namespace: monitoring
+  labels:
+    prometheus: k8s
+    role: alert-rules
+spec:
+  groups:
+  - name: control-plane
+    rules:
+    - alert: KubeAPIServerDown
+      expr: up{job="apiserver"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "KubeAPI server is down"
+        description: "KubeAPI server has disappeared from Prometheus target discovery."
+    - alert: KubeControllerManagerDown
+      expr: up{job="kube-controller-manager"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Controller manager is down"
+        description: "Controller manager has disappeared from Prometheus target discovery."
+    - alert: KubeSchedulerDown
+      expr: up{job="kube-scheduler"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Scheduler is down"
+        description: "Scheduler has disappeared from Prometheus target discovery."
+    - alert: EtcdHighCommitDuration
+      expr: histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m])) > 0.5
+      for: 10m
+      labels:
+        severity: warning
+      annotations:
+        summary: "etcd high commit duration"
+        description: "etcd disk WAL fsync duration is high."

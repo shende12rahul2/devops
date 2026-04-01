@@ -1,0 +1,184 @@
+# Istio Service Mesh Production Setup
+# Week 17, Day 7: Lab 17.1
+
+# Istio Gateway for Production Traffic
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: production-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: production-tls
+    hosts:
+    - "*.production.example.com"
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*.staging.example.com"
+
+---
+# Virtual Service with Traffic Management
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: production-app
+  namespace: production
+spec:
+  hosts:
+  - app.production.example.com
+  gateways:
+  - istio-system/production-gateway
+  http:
+  - match:
+    - uri:
+        prefix: "/api/v1"
+    route:
+    - destination:
+        host: api-service
+        subset: v1
+      weight: 90
+    - destination:
+        host: api-service
+        subset: v2
+      weight: 10
+  - match:
+    - uri:
+        prefix: "/api/v2"
+    route:
+    - destination:
+        host: api-service
+        subset: v2
+  - route:
+    - destination:
+        host: web-service
+        port:
+          number: 8080
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 5s
+
+---
+# Destination Rule for Load Balancing
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: api-service-dr
+  namespace: production
+spec:
+  host: api-service
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 10
+        maxRequestsPerConnection: 10
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 30s
+      baseEjectionTime: 30s
+
+---
+# Peer Authentication for mTLS
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: production
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: api-authorization
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: api-service
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/production/sa/web-service"]
+    to:
+    - operation:
+        methods: ["GET", "POST"]
+        paths: ["/api/*"]
+  - from:
+    - source:
+        principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]
+    to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/health"]
+
+---
+# Service Entry for External Services
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-db
+  namespace: production
+spec:
+  hosts:
+  - database.external.com
+  ports:
+  - number: 5432
+    name: postgresql
+    protocol: TCP
+  resolution: DNS
+  endpoints:
+  - address: database.external.com
+
+---
+# EnvoyFilter for Custom Configuration
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: custom-timeout
+  namespace: production
+spec:
+  workloadSelector:
+    labels:
+      app: api-service
+  configPatches:
+  - applyTo: HTTP_ROUTE
+    match:
+      context: SIDECAR_OUTBOUND
+      routeConfiguration:
+        vhost:
+          name: "api-service.production.svc.cluster.local:8080"
+    patch:
+      operation: MERGE
+      value:
+        route:
+          timeout: "60s"
+          retry_policy:
+            retry_on: "5xx"
+            num_retries: 3
